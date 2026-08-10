@@ -1,0 +1,4 @@
+La encarnación es el elemento distintivo entre el Cristianismo y todas las demás religiones. Religiones previas han indagado, con distintos grados de acierto, y con distintos grados de revelación divina, en cuestiones respecto al origen y destino del hombre, la moral, la existencia del mal, la naturaleza intangible de Dios. Sin embargo, nadie se animó a amalgamar de forma consistente estas ideas, a la idea de que un ser humano también sea Dios.
+
+La encarnación es el aspecto más importante de la fe. Toda denominación que la niegue, queda automáticamente impedida de considerarse verdaderamente cristiana. La encarnación es necesaria para que la humanidad pague con su debido castigo (_sin derramamiento de sangre no se hace remisión de pecados_) al mismo tiempo que la humanidad no sea condenada a causa de esta justicia (_por él seremos salvos de la ira_).
+

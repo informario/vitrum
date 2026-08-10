@@ -1,0 +1,2 @@
+_Mi Señor y Dios, ¿de qué me sirve que me des algo, si aún sigo sin tener hijos y el heredero de mis bienes será Eliezer de Damasco?_
+Abraham era caldeo, y probablemente profesaba la religión de los caldeos. 

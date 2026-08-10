@@ -1,0 +1,5 @@
+No nací en la iglesia local. Siempre tuve la puerta abierta en caso de querer irme. No había bagaje familiar que me impida ser libre. Incluso pensé en irme de forma casi permanente desde que empecé a participar en ella.
+
+En contraste con el mundo, la iglesia local tiene características propias del cristianismo, como también elementos culturales típicamente _evangélicos_, que podemos discutir si realmente son parte del Evangelio o no. Hay palabras, ropa, gestos, horarios, formas, interpretaciones de la Biblia, símbolos, costumbres, que según a quién le preguntes, son parte del Evangelio o solo una cuestión cultural. La persona que viene de afuera viene con características diferentes, algunas chocan directamente con el Evangelio, otras chocan meramente con la cultura evangélica.
+
+Diferenciar entre ambas es importante, para dejarse corregir en lo que verdaderamente hay que cambiar. La identidad propia y las diferencias en lo lícito son positivas y enriquecedoras.
