@@ -23,7 +23,6 @@ const height = 680
 const graph = ref<Graph | null>(null)
 const positions = ref<Record<string, Point>>({})
 const pan = ref<Point>({ x: 0, y: 0 })
-const zoom = ref(1)
 function nodeFromUrl(): string | null {
   const node = new URLSearchParams(window.location.search).get('node')
   return node?.trim() || null
@@ -38,8 +37,6 @@ type DragState = {
 }
 
 let dragState: DragState | null = null
-const activePointers = new Map<number, Point>()
-let pinchStart: { distance: number; zoom: number; center: Point; pan: Point } | null = null
 let animationFrame: number | null = null
 let simulationAlpha = 1
 const velocities: Record<string, Point> = {}
@@ -196,47 +193,13 @@ function svgPoint(event: PointerEvent): Point {
   if (!svg || !bounds) return { x: event.clientX, y: event.clientY }
 
   return {
-    x: (event.clientX - bounds.left) * ((width / zoom.value) / bounds.width) - pan.value.x,
-    y: (event.clientY - bounds.top) * ((height / zoom.value) / bounds.height) - pan.value.y,
-  }
-}
-
-function startPinch(): void {
-  const pointers = [...activePointers.values()]
-  if (pointers.length < 2) return
-  const [first, second] = pointers
-  if (!first || !second) return
-  pinchStart = {
-    distance: Math.max(Math.hypot(second.x - first.x, second.y - first.y), 1),
-    zoom: zoom.value,
-    center: { x: (first.x + second.x) / 2, y: (first.y + second.y) / 2 },
-    pan: { ...pan.value },
-  }
-  dragState = null
-}
-
-function updatePinch(): void {
-  if (!pinchStart || activePointers.size < 2) return
-  const pointers = [...activePointers.values()]
-  const [first, second] = pointers
-  if (!first || !second) return
-  const distance = Math.max(Math.hypot(second.x - first.x, second.y - first.y), 1)
-  zoom.value = Math.min(4, Math.max(1, pinchStart.zoom * distance / pinchStart.distance))
-  const center = { x: (first.x + second.x) / 2, y: (first.y + second.y) / 2 }
-  pan.value = {
-    x: pinchStart.pan.x + (center.x - pinchStart.center.x) * (width / 1100),
-    y: pinchStart.pan.y + (center.y - pinchStart.center.y) * (height / 680),
+    x: (event.clientX - bounds.left) * (width / bounds.width),
+    y: (event.clientY - bounds.top) * (height / bounds.height),
   }
 }
 
 function startPan(event: PointerEvent): void {
   if (event.button !== 0 && event.pointerType !== 'touch') return
-
-  if (event.pointerType === 'touch') {
-    activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
-    if (activePointers.size === 2) startPinch()
-  }
-  if (pinchStart) return
 
   const startPointer = svgPoint(event)
   dragState = {
@@ -248,13 +211,6 @@ function startPan(event: PointerEvent): void {
 }
 
 function drag(event: PointerEvent): void {
-  if (event.pointerType === 'touch' && activePointers.has(event.pointerId)) {
-    activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
-    if (pinchStart) {
-      updatePinch()
-      return
-    }
-  }
   if (!dragState) return
 
   const currentPointer = svgPoint(event)
@@ -269,10 +225,6 @@ function drag(event: PointerEvent): void {
 }
 
 function endDrag(event: PointerEvent): void {
-  if (event.pointerType === 'touch') {
-    activePointers.delete(event.pointerId)
-    if (activePointers.size < 2) pinchStart = null
-  }
   if (!dragState) return
   const target = event.currentTarget as SVGElement
   if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId)
@@ -334,7 +286,7 @@ function contentFor(node: string): string {
         </label>
       </form>
       <svg
-        :viewBox="`${-pan.x} ${-pan.y} ${width / zoom} ${height / zoom}`"
+        :viewBox="`${-pan.x} ${-pan.y} ${width} ${height}`"
         role="img"
         @pointerdown="startPan"
         @pointermove="drag"
