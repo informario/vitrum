@@ -120,6 +120,7 @@ svg:active { cursor: grabbing; }
     width: auto;
     max-width: none;
     max-height: calc(100dvh - 2rem);
+    transform: none;
     padding: 1.25rem 1rem 1rem;
     border-radius: .65rem;
   }
