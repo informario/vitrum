@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, onUnmounted, reactive, ref } from 'vue'
 import Graph from 'graphology'
+import { select } from 'd3-selection'
+import { zoom as createZoom, zoomIdentity, type ZoomBehavior, type ZoomTransform } from 'd3-zoom'
 
 import { createGraph, type Database } from '../controller/graph_generator'
 import GraphNode from './GraphNode.vue'
@@ -23,6 +25,8 @@ const height = 680
 const graph = ref<Graph | null>(null)
 const positions = ref<Record<string, Point>>({})
 const pan = ref<Point>({ x: 0, y: 0 })
+const zoom = ref(1)
+const graphSvg = ref<SVGSVGElement | null>(null)
 function nodeFromUrl(): string | null {
   const node = new URLSearchParams(window.location.search).get('node')
   return node?.trim() || null
@@ -36,8 +40,8 @@ type DragState = {
   startPosition: Point
 }
 
-let dragState: DragState | null = null
 let animationFrame: number | null = null
+let zoomBehavior: ZoomBehavior<SVGSVGElement, unknown> | null = null
 let simulationAlpha = 1
 const velocities: Record<string, Point> = {}
 
@@ -141,6 +145,16 @@ onMounted(() => {
   positions.value = randomPositions(nextGraph.nodes())
   for (const node of nextGraph.nodes()) velocities[node] = { x: 0, y: 0 }
   restartPhysics()
+
+  if (graphSvg.value) {
+    zoomBehavior = createZoom<SVGSVGElement, unknown>()
+      .scaleExtent([1, 4])
+      .on('zoom', ({ transform }: { transform: ZoomTransform }) => {
+        zoom.value = transform.k
+        pan.value = { x: transform.x / transform.k, y: transform.y / transform.k }
+      })
+    select(graphSvg.value).call(zoomBehavior).call(zoomBehavior.transform, zoomIdentity)
+  }
 })
 
 function updateUrl(node: string | null, historyMode: 'push' | 'replace' = 'push'): void {
@@ -164,6 +178,7 @@ onMounted(() => window.addEventListener('popstate', handleHistoryChange))
 
 onBeforeUnmount(() => {
   if (animationFrame !== null) cancelAnimationFrame(animationFrame)
+  if (graphSvg.value && zoomBehavior) select(graphSvg.value).on('.zoom', null)
 })
 
 onUnmounted(() => window.removeEventListener('popstate', handleHistoryChange))
@@ -179,56 +194,6 @@ const selectedContent = computed(() => selectedNode.value ? contentFor(selectedN
 
 function point(node: string): Point {
   return positions.value[node] ?? { x: 0, y: 0 }
-}
-
-function svgPoint(event: PointerEvent): Point {
-  const currentTarget = event.currentTarget
-  const svg = currentTarget instanceof SVGSVGElement
-    ? currentTarget
-    : currentTarget instanceof SVGElement
-      ? currentTarget.ownerSVGElement
-      : event.target instanceof SVGElement ? event.target.ownerSVGElement : null
-  const bounds = svg?.getBoundingClientRect()
-
-  if (!svg || !bounds) return { x: event.clientX, y: event.clientY }
-
-  return {
-    x: (event.clientX - bounds.left) * (width / bounds.width),
-    y: (event.clientY - bounds.top) * (height / bounds.height),
-  }
-}
-
-function startPan(event: PointerEvent): void {
-  if (event.button !== 0 && event.pointerType !== 'touch') return
-
-  const startPointer = svgPoint(event)
-  dragState = {
-    kind: 'pan',
-    startPointer,
-    startPosition: { ...pan.value },
-  }
-  ;(event.currentTarget as SVGElement).setPointerCapture(event.pointerId)
-}
-
-function drag(event: PointerEvent): void {
-  if (!dragState) return
-
-  const currentPointer = svgPoint(event)
-  const delta = {
-    x: currentPointer.x - dragState.startPointer.x,
-    y: currentPointer.y - dragState.startPointer.y,
-  }
-  pan.value = {
-    x: dragState.startPosition.x + delta.x,
-    y: dragState.startPosition.y + delta.y,
-  }
-}
-
-function endDrag(event: PointerEvent): void {
-  if (!dragState) return
-  const target = event.currentTarget as SVGElement
-  if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId)
-  dragState = null
 }
 
 function updateNodePosition(node: string, position: Point): void {
@@ -286,12 +251,9 @@ function contentFor(node: string): string {
         </label>
       </form>
       <svg
-        :viewBox="`${-pan.x} ${-pan.y} ${width} ${height}`"
+        ref="graphSvg"
+        :viewBox="`${-pan.x} ${-pan.y} ${width / zoom} ${height / zoom}`"
         role="img"
-        @pointerdown="startPan"
-        @pointermove="drag"
-        @pointerup="endDrag"
-        @pointercancel="endDrag"
       >
         <defs>
           <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
