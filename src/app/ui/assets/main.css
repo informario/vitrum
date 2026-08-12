@@ -5,8 +5,8 @@
   min-height: 100dvh;
   display: flex;
   justify-content: center;
-  /* Keep the application's scale tied to the available height. */
-  font-size: calc(100dvh / 80);
+  /* Keep labels readable while allowing the layout to scale with the viewport. */
+  font-size: clamp(.75rem, calc(100dvh / 80), 1rem);
 }
 
 .graph-page { width: 100%; min-height: 100dvh; }
@@ -14,6 +14,7 @@
   position: relative;
   width: 100%;
   height: 100dvh;
+  min-height: 18rem;
   overflow: hidden;
   border: max(1px, .06rem) solid #29243b;
   background: #110f18;
@@ -21,8 +22,8 @@
 .physics-controls {
   position: absolute;
   z-index: 1;
-  top: .7rem;
-  right: .75rem;
+  top: max(.7rem, env(safe-area-inset-top));
+  right: max(.75rem, env(safe-area-inset-right));
   display: grid;
   gap: .25rem;
   width: min(10.5rem, calc(100% - 1.5rem));
@@ -74,7 +75,8 @@ svg:active { cursor: grabbing; }
   position: fixed;
   inset: 50% auto auto 50%;
   width: min(90vw, 54rem);
-  max-height: 84dvh;
+  max-width: calc(100vw - 2rem);
+  max-height: min(84dvh, 48rem);
   padding: 1.5rem;
   border: 1px solid #40385c;
   border-radius: .5rem;
@@ -101,10 +103,50 @@ svg:active { cursor: grabbing; }
   font-size: 1.5rem;
   cursor: pointer;
 }
+
+@media (max-width: 42rem) {
+  #app { font-size: clamp(.75rem, 3.2vw, .95rem); }
+
+  .physics-controls {
+    display: none;
+  }
+
+  .physics-controls label {
+    grid-template-columns: minmax(3.8rem, auto) minmax(3rem, 1fr);
+  }
+
+  .note-dialog {
+    inset: 1rem;
+    width: auto;
+    max-width: none;
+    max-height: calc(100dvh - 2rem);
+    padding: 1.25rem 1rem 1rem;
+    border-radius: .65rem;
+  }
+
+  .note-dialog h2 {
+    max-width: calc(100% - 2rem);
+    margin-bottom: .75rem;
+    font-size: 1.15rem;
+    overflow-wrap: anywhere;
+  }
+
+  .note-body-with-assets { grid-template-columns: 1fr; gap: 1rem; }
+  .note-assets, .note-image { max-height: 30dvh; }
+  .note-dialog pre { max-height: 58dvh; font-size: 1em; line-height: 1.45; }
+}
+
+@media (max-width: 25rem) {
+  .physics-controls { display: none; }
+}
 .edges line { stroke: #625a82; stroke-width: 1.2; opacity: .65; marker-end: url(#arrowhead); }
 .node circle { fill: #8b7cf6; stroke: #c6beff; stroke-width: 2; }
 .node text { fill: #ddd8ed; font-size: 1em; pointer-events: none; }
 .loading { position: absolute; inset: 50% auto auto 50%; color: #aaa2bf; font-size: 1rem; transform: translate(-50%, -50%); }
+
+@media (max-width: 42rem) {
+  .node text { fill: #ddd8ed; font-size: 2em; pointer-events: none; }
+}
 
 a,
 .green {
