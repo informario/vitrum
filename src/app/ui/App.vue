@@ -5,6 +5,7 @@ import { select } from 'd3-selection'
 import { zoom as createZoom, zoomIdentity, type ZoomBehavior, type ZoomTransform } from 'd3-zoom'
 
 import { createGraph, type Database } from '../controller/graph_generator'
+import { isLightMode } from '../theme'
 import GraphNode from './GraphNode.vue'
 import NoteDialog from './NoteDialog.vue'
 
@@ -203,6 +204,10 @@ function point(node: string): Point {
   return positions.value[node] ?? { x: 0, y: 0 }
 }
 
+function velocity(node: string): Point {
+  return velocities[node] ?? { x: 0, y: 0 }
+}
+
 function updateNodePosition(node: string, position: Point): void {
   positions.value = { ...positions.value, [node]: position }
   velocities[node] = { x: 0, y: 0 }
@@ -296,6 +301,9 @@ function contentFor(node: string): string {
             :label="node"
             :x="point(node).x"
             :y="point(node).y"
+            :velocity-x="velocity(node).x"
+            :velocity-y="velocity(node).y"
+            :light-mode="isLightMode"
             :canvas-width="width"
             :canvas-height="height"
             @drag-start="startNodeDrag(node)"
