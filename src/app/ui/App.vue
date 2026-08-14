@@ -34,16 +34,11 @@ function nodeFromUrl(): string | null {
 
 const selectedNode = ref<string | null>(nodeFromUrl())
 
-type DragState = {
-  kind: 'pan'
-  startPointer: Point
-  startPosition: Point
-}
-
 let animationFrame: number | null = null
 let zoomBehavior: ZoomBehavior<SVGSVGElement, unknown> | null = null
 let simulationAlpha = 1
 const velocities: Record<string, Point> = {}
+const draggingNode = ref<string | null>(null)
 
 const markdownFiles = import.meta.glob('../database/**/*.md', {
   eager: true,
@@ -118,6 +113,12 @@ function runPhysics(): void {
   const center = { x: width / 2, y: height / 2 }
   for (const node of currentNodes) {
     const position = nextPositions[node]!
+    if (draggingNode.value === node) {
+      const velocity = velocities[node] ?? (velocities[node] = { x: 0, y: 0 })
+      velocity.x = 0
+      velocity.y = 0
+      continue
+    }
     forces[node]!.x += (center.x - position.x) * physics.centerStrength
     forces[node]!.y += (center.y - position.y) * physics.centerStrength
     const velocity = velocities[node] ?? (velocities[node] = { x: 0, y: 0 })
@@ -201,6 +202,16 @@ function updateNodePosition(node: string, position: Point): void {
   velocities[node] = { x: 0, y: 0 }
 }
 
+function startNodeDrag(node: string): void {
+  draggingNode.value = node
+}
+
+function endNodeDrag(node: string): void {
+  if (draggingNode.value !== node) return
+  draggingNode.value = null
+  restartPhysics()
+}
+
 function selectNode(node: string): void {
   selectedNode.value = null
   requestAnimationFrame(() => {
@@ -280,6 +291,8 @@ function contentFor(node: string): string {
           :y="point(node).y"
           :canvas-width="width"
           :canvas-height="height"
+          @drag-start="startNodeDrag(node)"
+          @drag-end="endNodeDrag(node)"
           @moved="updateNodePosition(node, $event)"
           @selected="selectGraphNode(node)"
         />

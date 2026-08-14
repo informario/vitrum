@@ -12,12 +12,14 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  'drag-start': []
+  'drag-end': []
   moved: [position: Point]
   selected: []
 }>()
 
 const position = ref<Point>({ x: props.x, y: props.y })
-let dragStart: { pointer: Point; position: Point; moved: boolean } | null = null
+let dragStart: { pointer: Point; moved: boolean } | null = null
 
 watch(() => [props.x, props.y], ([x, y]) => {
   if (typeof x === 'number' && typeof y === 'number') position.value = { x, y }
@@ -25,6 +27,15 @@ watch(() => [props.x, props.y], ([x, y]) => {
 
 function pointerPosition(event: PointerEvent): Point {
   const svg = (event.currentTarget as SVGElement).ownerSVGElement
+  const transform = svg?.getScreenCTM()
+  if (svg && transform) {
+    const point = svg.createSVGPoint()
+    point.x = event.clientX
+    point.y = event.clientY
+    const graphPoint = point.matrixTransform(transform.inverse())
+    return { x: graphPoint.x, y: graphPoint.y }
+  }
+
   const bounds = svg?.getBoundingClientRect()
   if (!bounds) return { x: event.clientX, y: event.clientY }
   return {
@@ -36,7 +47,7 @@ function pointerPosition(event: PointerEvent): Point {
 function startDrag(event: PointerEvent): void {
   event.stopPropagation()
   if (event.button !== 0 && event.pointerType !== 'touch') return
-  dragStart = { pointer: pointerPosition(event), position: { ...position.value }, moved: false }
+  dragStart = { pointer: pointerPosition(event), moved: false }
   ;(event.currentTarget as SVGElement).setPointerCapture(event.pointerId)
 }
 
@@ -44,15 +55,20 @@ function move(event: PointerEvent): void {
   if (!dragStart) return
   const pointer = pointerPosition(event)
   const delta = { x: pointer.x - dragStart.pointer.x, y: pointer.y - dragStart.pointer.y }
-  if (Math.abs(delta.x) > 3 || Math.abs(delta.y) > 3) dragStart.moved = true
-  position.value = { x: dragStart.position.x + delta.x, y: dragStart.position.y + delta.y }
-  emit('moved', position.value)
+  if (!dragStart.moved && (Math.abs(delta.x) > 3 || Math.abs(delta.y) > 3)) {
+    dragStart.moved = true
+    emit('drag-start')
+  }
+  if (!dragStart.moved) return
+  position.value = pointer
+  emit('moved', pointer)
 }
 
 function endDrag(event: PointerEvent): void {
   if (!dragStart) return
   const target = event.currentTarget as SVGElement
   if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId)
+  if (dragStart.moved) emit('drag-end')
   if (!dragStart.moved) emit('selected')
   dragStart = null
 }
@@ -63,6 +79,7 @@ function endDrag(event: PointerEvent): void {
     class="node"
     :transform="`translate(${position.x} ${position.y})`"
     @pointerdown="startDrag"
+    @mousedown.stop
     @pointermove="move"
     @pointerup="endDrag"
     @pointercancel="endDrag"
