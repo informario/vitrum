@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, onUnmounted, reactive, ref } from 'vue'
 import Graph from 'graphology'
+import { select } from 'd3-selection'
+import { zoom as createZoom, zoomIdentity, type ZoomBehavior, type ZoomTransform } from 'd3-zoom'
 
 import { createGraph, type Database } from '../controller/graph_generator'
+import { isLightMode } from '../theme'
 import GraphNode from './GraphNode.vue'
 import NoteDialog from './NoteDialog.vue'
 
@@ -22,7 +25,8 @@ const width = 1100
 const height = 680
 const graph = ref<Graph | null>(null)
 const positions = ref<Record<string, Point>>({})
-const pan = ref<Point>({ x: 0, y: 0 })
+const camera = ref<ZoomTransform>(zoomIdentity)
+const graphSvg = ref<SVGSVGElement | null>(null)
 function nodeFromUrl(): string | null {
   const node = new URLSearchParams(window.location.search).get('node')
   return node?.trim() || null
@@ -30,16 +34,11 @@ function nodeFromUrl(): string | null {
 
 const selectedNode = ref<string | null>(nodeFromUrl())
 
-type DragState = {
-  kind: 'pan'
-  startPointer: Point
-  startPosition: Point
-}
-
-let dragState: DragState | null = null
 let animationFrame: number | null = null
+let zoomBehavior: ZoomBehavior<SVGSVGElement, unknown> | null = null
 let simulationAlpha = 1
 const velocities: Record<string, Point> = {}
+const draggingNode = ref<string | null>(null)
 
 const markdownFiles = import.meta.glob('../database/**/*.md', {
   eager: true,
@@ -114,6 +113,12 @@ function runPhysics(): void {
   const center = { x: width / 2, y: height / 2 }
   for (const node of currentNodes) {
     const position = nextPositions[node]!
+    if (draggingNode.value === node) {
+      const velocity = velocities[node] ?? (velocities[node] = { x: 0, y: 0 })
+      velocity.x = 0
+      velocity.y = 0
+      continue
+    }
     forces[node]!.x += (center.x - position.x) * physics.centerStrength
     forces[node]!.y += (center.y - position.y) * physics.centerStrength
     const velocity = velocities[node] ?? (velocities[node] = { x: 0, y: 0 })
@@ -141,6 +146,23 @@ onMounted(() => {
   positions.value = randomPositions(nextGraph.nodes())
   for (const node of nextGraph.nodes()) velocities[node] = { x: 0, y: 0 }
   restartPhysics()
+
+  if (graphSvg.value) {
+    zoomBehavior = createZoom<SVGSVGElement, unknown>()
+      .scaleExtent([1, 4])
+      .filter((event: Event) => {
+        if (event.type === 'touchstart') {
+          const target = event.target as Element | null
+          if (target?.closest('.node')) return false
+        }
+        const pointerEvent = event as MouseEvent
+        return (!pointerEvent.ctrlKey || event.type === 'wheel') && !pointerEvent.button
+      })
+      .on('zoom', ({ transform }: { transform: ZoomTransform }) => {
+        camera.value = transform
+      })
+    select(graphSvg.value).call(zoomBehavior).call(zoomBehavior.transform, zoomIdentity)
+  }
 })
 
 function updateUrl(node: string | null, historyMode: 'push' | 'replace' = 'push'): void {
@@ -164,6 +186,7 @@ onMounted(() => window.addEventListener('popstate', handleHistoryChange))
 
 onBeforeUnmount(() => {
   if (animationFrame !== null) cancelAnimationFrame(animationFrame)
+  if (graphSvg.value && zoomBehavior) select(graphSvg.value).on('.zoom', null)
 })
 
 onUnmounted(() => window.removeEventListener('popstate', handleHistoryChange))
@@ -181,59 +204,23 @@ function point(node: string): Point {
   return positions.value[node] ?? { x: 0, y: 0 }
 }
 
-function svgPoint(event: PointerEvent): Point {
-  const currentTarget = event.currentTarget
-  const svg = currentTarget instanceof SVGSVGElement
-    ? currentTarget
-    : currentTarget instanceof SVGElement
-      ? currentTarget.ownerSVGElement
-      : event.target instanceof SVGElement ? event.target.ownerSVGElement : null
-  const bounds = svg?.getBoundingClientRect()
-
-  if (!svg || !bounds) return { x: event.clientX, y: event.clientY }
-
-  return {
-    x: (event.clientX - bounds.left) * (width / bounds.width),
-    y: (event.clientY - bounds.top) * (height / bounds.height),
-  }
-}
-
-function startPan(event: PointerEvent): void {
-  if (event.button !== 0 && event.pointerType !== 'touch') return
-
-  const startPointer = svgPoint(event)
-  dragState = {
-    kind: 'pan',
-    startPointer,
-    startPosition: { ...pan.value },
-  }
-  ;(event.currentTarget as SVGElement).setPointerCapture(event.pointerId)
-}
-
-function drag(event: PointerEvent): void {
-  if (!dragState) return
-
-  const currentPointer = svgPoint(event)
-  const delta = {
-    x: currentPointer.x - dragState.startPointer.x,
-    y: currentPointer.y - dragState.startPointer.y,
-  }
-  pan.value = {
-    x: dragState.startPosition.x + delta.x,
-    y: dragState.startPosition.y + delta.y,
-  }
-}
-
-function endDrag(event: PointerEvent): void {
-  if (!dragState) return
-  const target = event.currentTarget as SVGElement
-  if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId)
-  dragState = null
+function velocity(node: string): Point {
+  return velocities[node] ?? { x: 0, y: 0 }
 }
 
 function updateNodePosition(node: string, position: Point): void {
   positions.value = { ...positions.value, [node]: position }
   velocities[node] = { x: 0, y: 0 }
+}
+
+function startNodeDrag(node: string): void {
+  draggingNode.value = node
+}
+
+function endNodeDrag(node: string): void {
+  if (draggingNode.value !== node) return
+  draggingNode.value = null
+  restartPhysics()
 }
 
 function selectNode(node: string): void {
@@ -286,12 +273,9 @@ function contentFor(node: string): string {
         </label>
       </form>
       <svg
-        :viewBox="`${-pan.x} ${-pan.y} ${width} ${height}`"
+        ref="graphSvg"
+        :viewBox="`0 0 ${width} ${height}`"
         role="img"
-        @pointerdown="startPan"
-        @pointermove="drag"
-        @pointerup="endDrag"
-        @pointercancel="endDrag"
       >
         <defs>
           <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
@@ -299,28 +283,35 @@ function contentFor(node: string): string {
           </marker>
         </defs>
 
-        <g class="edges">
-          <line
-            v-for="item in edges"
-            :key="item.edge"
-            :x1="point(item.source).x"
-            :y1="point(item.source).y"
-            :x2="point(item.target).x"
-            :y2="point(item.target).y"
+        <g class="camera" :transform="camera.toString()">
+          <g class="edges">
+            <line
+              v-for="item in edges"
+              :key="item.edge"
+              :x1="point(item.source).x"
+              :y1="point(item.source).y"
+              :x2="point(item.target).x"
+              :y2="point(item.target).y"
+            />
+          </g>
+
+          <GraphNode
+            v-for="node in nodes"
+            :key="node"
+            :label="node"
+            :x="point(node).x"
+            :y="point(node).y"
+            :velocity-x="velocity(node).x"
+            :velocity-y="velocity(node).y"
+            :light-mode="isLightMode"
+            :canvas-width="width"
+            :canvas-height="height"
+            @drag-start="startNodeDrag(node)"
+            @drag-end="endNodeDrag(node)"
+            @moved="updateNodePosition(node, $event)"
+            @selected="selectGraphNode(node)"
           />
         </g>
-
-        <GraphNode
-          v-for="node in nodes"
-          :key="node"
-          :label="node"
-          :x="point(node).x"
-          :y="point(node).y"
-          :canvas-width="width"
-          :canvas-height="height"
-          @moved="updateNodePosition(node, $event)"
-          @selected="selectGraphNode(node)"
-        />
       </svg>
       <p v-if="!graph" class="loading">Loading graph…</p>
     </section>
