@@ -7,12 +7,12 @@ Ahora mismo, al escribir esto, creo que no alcanza con las Escrituras. Estas no 
 
 Nunca me alcanzó con las Escrituras. Si creo en ellas, es porque decidí creerle a la Iglesia de antemano, por transitividad también creí en las Escrituras.
 
-Algunos dicen que pueden creer en las Escrituras dado que ven el accionar de ellas en las personas. Para el caso, hay libros de autoayuda que cambian vidas, y no por eso les voy a asignar un carácter de revelación divina.
+Algunos dicen que pueden creer en las Escrituras dado que ven el accionar de ellas en las personas. Para el caso, hay libros de autoayuda que cambian vidas, y no por eso las considero revelación divina.
 
 Algunos dicen que las Escrituras son confiables dado que poseen una armonía a pesar de la diversidad de autores y la extensión temporal de su confección. Yo diría que posiblemente, los nuevos libros fueron escritos a la luz de los anteriores, adaptando la cosmovisión y experimentando una evolución en el pensamiento.
-Hay elementos de los que estoy de acuerdo: por ejemplo, la existencia del protoevangelio en Génesis, la profecía de hechos históricos unívocos, dan una indicio interesante acerca de la veracidad de las Escrituras
+Hay elementos de los que estoy de acuerdo: por ejemplo, la existencia del protoevangelio en Génesis, la profecía de hechos históricos unívocos, dan una indicio interesante acerca de la veracidad de las Escrituras.
 
-Algunos dicen que pueden creer en Jesús o al el testimonio de los Apóstoles, apelando al trilema de Lewis o al dilema de la sinceridad. Si bien creo que son argumentos buenos, no los considero que contemplen todas las posibilidades o grises. Existe gente que muere por causas falsas.
+Algunos dicen que pueden creer en Jesús o al el testimonio de los Apóstoles apelando al trilema de Lewis o al dilema de la sinceridad. Si bien creo que son argumentos buenos, no los considero que contemplen todas las posibilidades o grises. Existe gente que muere por causas falsas.
 
 Por último, por más de que confiemos en las Escrituras, aún no sabemos como interpretarlas.
 

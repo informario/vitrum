@@ -18,3 +18,5 @@ El mundo es verdaderamente un lugar horrible lleno de las peores aberraciones co
 El cristianismo encaja como anillo al dedo a mis motivaciones, deseos y preocupaciones existenciales. Sin embargo, que el cristianismo encaje, no significa que sea verdad.
 
 [[Cognoscibilidad del Cristianismo|¿Es razonable creer en Cristo hoy?]]
+
+

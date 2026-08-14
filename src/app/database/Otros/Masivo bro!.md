@@ -1,0 +1,8 @@
+La automatización en la industria y la recesión hicieron que muchas personas se vean desplazadas del mercado laboral. Si bien es cierto que surgieron nuevas necesidades, para un mismo salario hoy hace falta estudiar y prepararse mucho más. Esto se me hace muy evidente en la industria del software. La velocidad del desarrollo tecnológico de los últimos 40 años hace dudar a muchos acerca de su futuro, tal que hoy la receta tradicional de estudiar para tener un buen trabajo no parece convincente: de un momento a otro, me puedo ver reemplazado por una IA y que mi formación no valga nada.
+Dado el pesimismo actual, es fácil verse seducido por los cantos de sirena actuales: apuestas, prostitución digital, cursos de trading, esquemas piramidales de diverso tipo, etc.
+
+Identifiqué algunos elementos del discurso Masivo que pueden ser generalmente útiles para todos: Autonomía económica, mentalidad de oportunidad, esfuerzo e incomodidad, disciplina corporal, control emocional, rechazo de la victimización.
+
+La ideología de los colorados masivos incorpora los valores de la antigüedad que tanto [[Inversión de valores|Nietzsche]]amaba. Los puntos más cuestionables, ignorando el esquema Ponzi, quizá sean: demostración de estatus, fuerza y poder como principales virtudes, cosificación de la mujer, maximizar atractivo y estatus como fin último en la vida.
+
+Si Dios no existiese, la ideología de los colorados masivos sería la correcta. La vida consistiría meramente en vivir para uno mismo.
