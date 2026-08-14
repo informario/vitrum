@@ -151,8 +151,8 @@ onMounted(() => {
       .scaleExtent([1, 4])
       .filter((event: Event) => {
         if (event.type === 'touchstart') {
-          const target = event.target
-          if (target instanceof Element && target.closest('.node')) return false
+          const target = event.target as Element | null
+          if (target?.closest('.node')) return false
         }
         const pointerEvent = event as MouseEvent
         return (!pointerEvent.ctrlKey || event.type === 'wheel') && !pointerEvent.button
