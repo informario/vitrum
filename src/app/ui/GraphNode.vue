@@ -26,8 +26,10 @@ watch(() => [props.x, props.y], ([x, y]) => {
 })
 
 function pointerPosition(event: PointerEvent): Point {
-  const svg = (event.currentTarget as SVGElement).ownerSVGElement
-  const transform = svg?.getScreenCTM()
+  const node = event.currentTarget as SVGGraphicsElement
+  const svg = node.ownerSVGElement
+  const graphLayer = node.parentElement as SVGGraphicsElement | null
+  const transform = graphLayer?.getScreenCTM() ?? svg?.getScreenCTM()
   if (svg && transform) {
     const point = svg.createSVGPoint()
     point.x = event.clientX
