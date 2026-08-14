@@ -37,6 +37,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Enable SPA routes
+        run: |
+          cp dist/index.html dist/404.html
+          mkdir -p dist/putoelquelee
+          cp dist/index.html dist/putoelquelee/index.html
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
