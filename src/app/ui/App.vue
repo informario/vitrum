@@ -149,6 +149,14 @@ onMounted(() => {
   if (graphSvg.value) {
     zoomBehavior = createZoom<SVGSVGElement, unknown>()
       .scaleExtent([1, 4])
+      .filter((event: Event) => {
+        if (event.type === 'touchstart') {
+          const target = event.target
+          if (target instanceof Element && target.closest('.node')) return false
+        }
+        const pointerEvent = event as MouseEvent
+        return (!pointerEvent.ctrlKey || event.type === 'wheel') && !pointerEvent.button
+      })
       .on('zoom', ({ transform }: { transform: ZoomTransform }) => {
         camera.value = transform
       })
