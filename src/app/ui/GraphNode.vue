@@ -83,6 +83,7 @@ function endDrag(event: PointerEvent): void {
     @pointerdown="startDrag"
     @mousedown.stop
     @touchstart.stop
+    @touchmove.stop
     @pointermove="move"
     @pointerup="endDrag"
     @pointercancel="endDrag"
