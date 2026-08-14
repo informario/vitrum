@@ -82,6 +82,7 @@ function endDrag(event: PointerEvent): void {
     :transform="`translate(${position.x} ${position.y})`"
     @pointerdown="startDrag"
     @mousedown.stop
+    @touchstart.stop
     @pointermove="move"
     @pointerup="endDrag"
     @pointercancel="endDrag"
