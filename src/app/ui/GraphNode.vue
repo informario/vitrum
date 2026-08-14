@@ -86,6 +86,7 @@ function endDrag(event: PointerEvent): void {
     @pointerup="endDrag"
     @pointercancel="endDrag"
   >
+    <circle class="hit-area" r="8" aria-hidden="true" />
     <circle r="8" />
     <text x="14" y="5">{{ label }}</text>
   </g>

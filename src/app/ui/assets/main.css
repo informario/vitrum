@@ -142,10 +142,12 @@ svg:active { cursor: grabbing; }
 }
 .edges line { stroke: #625a82; stroke-width: 1.2; opacity: .65; marker-end: url(#arrowhead); }
 .node circle { fill: #8b7cf6; stroke: #c6beff; stroke-width: 2; }
+.node .hit-area { fill: transparent; stroke: none; pointer-events: all; }
 .node text { fill: #ddd8ed; font-size: 1em; pointer-events: none; }
 .loading { position: absolute; inset: 50% auto auto 50%; color: #aaa2bf; font-size: 1rem; transform: translate(-50%, -50%); }
 
 @media (max-width: 42rem) {
+  .node .hit-area { r: 24px; }
   .node text { fill: #ddd8ed; font-size: 2em; pointer-events: none; }
 }
 
