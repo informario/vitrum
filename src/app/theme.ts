@@ -1,3 +1,4 @@
 const pathname = window.location.pathname.replace(/\/+$/, '') || '/'
+const pathSegments = pathname.split('/').filter(Boolean)
 
-export const isLightMode = pathname === '/putoelquelee'
+export const isLightMode = pathSegments.at(-1) === 'putoelquelee'
